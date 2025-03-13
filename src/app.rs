@@ -1,6 +1,5 @@
 use axum::http::header;
 use axum::Router;
-use log::logger;
 use crate::{logger, routes};
 use tower_http::{
     compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer,

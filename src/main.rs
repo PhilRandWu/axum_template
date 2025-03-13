@@ -2,16 +2,19 @@ mod settings;
 
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use tracing::info;
+
 // use tracing::info;
 //
 mod app;
-// mod database;
+mod database;
 // mod errors;
 // mod logger;
 // mod models;
 mod routes;
 mod errors;
 mod logger;
+mod utils;
 // mod settings;
 // mod utils;
 
@@ -30,7 +33,7 @@ async fn main() -> Result<(), std::io::Error> {
     let app = app::create_app().await;
 
     let listener = TcpListener::bind(address).await?;
-    // info!("Server listening on {}", &address);
+    info!("Server listening on {}", &address);
 
     axum::serve(listener, app).await
 }
