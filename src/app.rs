@@ -10,6 +10,7 @@ pub async fn create_app() -> Router {
 
     Router::new()
         .merge(routes::status::create_route())
+        .merge(routes::user::create_route())
         .layer(trace::TraceLayer::new_for_http() // 一个用于 HTTP 的跟踪层，用于记录请求和响应的详细信息。
             .make_span_with(trace::DefaultMakeSpan::new().include_headers(true)) // 在创建跟踪跨度时包含请求头。
             .on_request(trace::DefaultOnRequest::new().level(tracing::Level::INFO)) // 在请求到达时记录日志，日志级别为 INFO。

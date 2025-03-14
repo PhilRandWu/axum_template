@@ -1,6 +1,5 @@
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, IntoResponseParts, Response, ResponseParts};
-use axum::routing::head;
 use serde::Serialize;
 use bytes::{BufMut, BytesMut};
 use tracing::error;

@@ -10,11 +10,11 @@ mod app;
 mod database;
 // mod errors;
 // mod logger;
-// mod models;
 mod routes;
 mod errors;
 mod logger;
 mod utils;
+mod models;
 // mod settings;
 // mod utils;
 

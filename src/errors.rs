@@ -1,7 +1,9 @@
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Json;
+use bcrypt::BcryptError;
 use serde_json::json;
+use tokio::task::JoinError;
 use wither::WitherError;
 
 #[derive(thiserror::Error, Debug)]
@@ -24,14 +26,22 @@ pub enum Error {
 
     #[error("{0}")]
     NotFound(#[from] NotFound),
+
+    #[error("{0}")]
+    RunSyncTask(#[from] JoinError),
+
+    #[error("{0}")]
+    HashPassword(#[from] BcryptError),
 }
 
 impl Error {
     fn get_codes(&self) -> (StatusCode, u16) {
         match *self {
-            Error::Wither(_) => (StatusCode::INTERNAL_SERVER_ERROR, 5002),
             Error::BadRequest(_) => (StatusCode::BAD_REQUEST, 40002),
-            Error::NotFound(_) => (StatusCode::NOT_FOUND, 40003)
+            Error::NotFound(_) => (StatusCode::NOT_FOUND, 40003),
+            Error::Wither(_) => (StatusCode::INTERNAL_SERVER_ERROR, 5002),
+            Error::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 5005),
+            Error::HashPassword(_) => (StatusCode::INTERNAL_SERVER_ERROR, 5006),
         }
     }
     pub fn bad_request() -> Self {

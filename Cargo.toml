@@ -21,9 +21,13 @@ tracing = "0.1.41"
 thiserror = "2.0.12"
 serde_json = "1.0.140"
 tracing-subscriber = "0.3.19"
-mongodb = "3.2.2"
-wither = "0.9.0"
+# https://github.com/thedodd/wither/pull/89#issuecomment-1023644443
+wither = { git = "https://github.com/thedodd/wither", rev = "52fd503" }
 async-trait = "0.1.87"
-validator = "0.20.0"
 bytes = "1.10.1"
 mime = "0.3.17"
+bson = { version = "2.14.0", features = ["serde_with", "chrono-0_4"] }
+chrono = "0.4.40"
+validator = { version = "0.20.0", features = ["derive"] }
+validator_derive = "0.20.0"
+bcrypt = "0.17.0"
