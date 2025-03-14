@@ -10,6 +10,9 @@
     "name": "rustapi"
   },
 
+  "auth": {
+    "secret": "secret"
+  },
 
   "logger": {
     "level": "debug"

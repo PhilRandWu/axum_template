@@ -41,6 +41,9 @@ impl User {
             locked_at: None,
         }
     }
+    pub fn is_password_match(&self, password: &str) -> bool {
+        bcrypt::verify(password, self.password.as_ref()).unwrap_or(false)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

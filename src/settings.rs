@@ -24,13 +24,19 @@ pub struct Database {
     pub name: String
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct Auth {
+    pub secret: String,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct Settings {
     pub environment: String,
     pub server: Server,
     pub logger: Logger,
-    pub database: Database
+    pub database: Database,
+    pub auth: Auth
 }
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {

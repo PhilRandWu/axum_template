@@ -31,3 +31,4 @@ chrono = "0.4.40"
 validator = { version = "0.20.0", features = ["derive"] }
 validator_derive = "0.20.0"
 bcrypt = "0.17.0"
+jsonwebtoken = "9.3.1"
