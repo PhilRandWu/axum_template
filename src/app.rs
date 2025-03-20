@@ -1,12 +1,12 @@
+use crate::{logger, routes};
 use axum::http::header;
 use axum::Router;
-use crate::{logger, routes};
 use tower_http::{
     compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer,
     sensitive_headers::SetSensitiveHeadersLayer, trace,
 };
 pub async fn create_app() -> Router {
-    logger::setup();
+    let _guard = logger::setup();
 
     Router::new()
         .merge(routes::status::create_route())

@@ -4,22 +4,21 @@ use axum::Json;
 use bcrypt::BcryptError;
 use serde_json::json;
 use tokio::task::JoinError;
-use wither::WitherError;
 use wither::mongodb::error::Error as MongoError;
+use wither::WitherError;
 
 #[derive(thiserror::Error, Debug)]
 #[error("Bad Request")]
-pub struct BadRequest{}
+pub struct BadRequest {}
 
 #[derive(thiserror::Error, Debug)]
 #[error("Not found")]
 pub struct NotFound {}
 
-
 #[derive(thiserror::Error, Debug)]
 #[error("{0}")]
 pub enum Error {
-      #[error("{0}")]
+    #[error("{0}")]
     Wither(#[from] WitherError),
 
     #[error("{0}")]
@@ -50,7 +49,7 @@ pub enum Error {
 impl Error {
     fn get_codes(&self) -> (StatusCode, u16) {
         match *self {
-                // 4XX Errors
+            // 4XX Errors
             Error::ParseObjectID(_) => (StatusCode::BAD_REQUEST, 40001),
             Error::BadRequest(_) => (StatusCode::BAD_REQUEST, 40002),
             Error::NotFound(_) => (StatusCode::NOT_FOUND, 40003),
@@ -93,7 +92,6 @@ impl IntoResponse for Error {
         (status_code, body).into_response()
     }
 }
-
 
 #[derive(thiserror::Error, Debug)]
 #[error("...")]

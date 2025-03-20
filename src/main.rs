@@ -10,20 +10,17 @@ mod app;
 mod database;
 // mod errors;
 // mod logger;
-mod routes;
 mod errors;
 mod logger;
-mod utils;
 mod models;
-// mod settings;
-// mod utils;
+mod routes;
+mod utils;
 
 // #[cfg(test)]
 // mod tests;
 
 // use errors::Error;
 use settings::SETTINGS;
-
 
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {

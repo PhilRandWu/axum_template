@@ -1,38 +1,44 @@
 use axum::http::{header, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, IntoResponseParts, Response, ResponseParts};
-use serde::Serialize;
 use bytes::{BufMut, BytesMut};
+use serde::Serialize;
 use tracing::error;
 
 pub struct ResponsePagination {
     pub count: u64,
     pub offset: u64,
-    pub limit: u32
+    pub limit: u32,
 }
 
 pub struct CustomResponse<T: Serialize> {
     pub body: Option<T>,
     pub status_code: StatusCode,
-    pub pagination: Option<ResponsePagination>
+    pub pagination: Option<ResponsePagination>,
 }
 
 pub struct CustomResponseBuilder<T: Serialize> {
     pub body: Option<T>,
     pub status_code: StatusCode,
-    pub pagination: Option<ResponsePagination>
+    pub pagination: Option<ResponsePagination>,
 }
 
-impl<T> Default for CustomResponseBuilder<T> where T: Serialize {
+impl<T> Default for CustomResponseBuilder<T>
+where
+    T: Serialize,
+{
     fn default() -> Self {
         Self {
             body: None,
             status_code: StatusCode::OK,
-            pagination: None
+            pagination: None,
         }
     }
 }
 
-impl<T> CustomResponseBuilder<T> where T: Serialize {
+impl<T> CustomResponseBuilder<T>
+where
+    T: Serialize,
+{
     pub fn new() -> Self {
         Self::default()
     }
@@ -56,16 +62,19 @@ impl<T> CustomResponseBuilder<T> where T: Serialize {
         CustomResponse {
             body: self.body,
             status_code: self.status_code,
-            pagination: self.pagination
+            pagination: self.pagination,
         }
     }
 }
 
-impl<T> IntoResponse for CustomResponse<T> where T: Serialize {
+impl<T> IntoResponse for CustomResponse<T>
+where
+    T: Serialize,
+{
     fn into_response(self) -> Response {
         let body = match self.body {
             Some(body) => body,
-            None => return (self.status_code).into_response()
+            None => return (self.status_code).into_response(),
         };
 
         let mut bytes = BytesMut::new().writer();
@@ -80,9 +89,9 @@ impl<T> IntoResponse for CustomResponse<T> where T: Serialize {
             HeaderValue::from_static(mime::APPLICATION_JSON.as_ref()),
         )];
 
-        match  self.pagination {
+        match self.pagination {
             Some(pagination) => (self.status_code, pagination, headers, bytes).into_response(),
-            None => (self.status_code, headers, bytes).into_response()
+            None => (self.status_code, headers, bytes).into_response(),
         }
     }
 }
@@ -91,7 +100,7 @@ impl IntoResponseParts for ResponsePagination {
     type Error = (StatusCode, String);
 
     fn into_response_parts(self, mut res: ResponseParts) -> Result<ResponseParts, Self::Error> {
-         res.headers_mut()
+        res.headers_mut()
             .insert("x-pagination-count", self.count.into());
 
         res.headers_mut()
