@@ -18,6 +18,8 @@ pub struct NotFound {}
 #[derive(thiserror::Error, Debug)]
 #[error("{0}")]
 pub enum Error {
+    #[error("Conflict: {0}")]
+    Conflict(String),
     #[error("{0}")]
     Wither(#[from] WitherError),
 
@@ -50,6 +52,7 @@ impl Error {
     fn get_codes(&self) -> (StatusCode, u16) {
         match *self {
             // 4XX Errors
+            Error::Conflict(_) => (StatusCode::CONFLICT, 40004),
             Error::ParseObjectID(_) => (StatusCode::BAD_REQUEST, 40001),
             Error::BadRequest(_) => (StatusCode::BAD_REQUEST, 40002),
             Error::NotFound(_) => (StatusCode::NOT_FOUND, 40003),
@@ -60,6 +63,7 @@ impl Error {
                 (StatusCode::UNAUTHORIZED, 40005)
             }
             Error::Authenticate(AuthenticateError::Locked) => (StatusCode::LOCKED, 40006),
+            Error::Authenticate(AuthenticateError::Conflict) => (StatusCode::CONFLICT, 40007),
 
             // 5XX Errors
             Error::Authenticate(AuthenticateError::TokenCreation) => {
@@ -96,6 +100,8 @@ impl IntoResponse for Error {
 #[derive(thiserror::Error, Debug)]
 #[error("...")]
 pub enum AuthenticateError {
+    #[error("Resource conflict")]
+    Conflict,
     #[error("Wrong authentication credentials")]
     WrongCredentials,
     #[error("Failed to create authentication token")]

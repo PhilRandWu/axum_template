@@ -1,12 +1,12 @@
-use axum::{Json, Router};
-use axum::routing::get;
-use serde::{Deserialize, Serialize};
-use log::debug;
 use crate::errors::Error;
+use axum::routing::get;
+use axum::{Json, Router};
+use log::debug;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Status {
-    status: String
+    status: String,
 }
 
 pub fn create_route() -> Router {
@@ -16,6 +16,6 @@ pub fn create_route() -> Router {
 async fn get_status() -> Result<Json<Status>, Error> {
     debug!("Returning status");
     Ok(Json(Status {
-        status: "ok".to_owned()
+        status: "ok".to_owned(),
     }))
 }

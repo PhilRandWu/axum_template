@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use axum::extract::Query;
 use bson::oid::ObjectId;
 use bson::{doc, from_bson, Bson, Document};
-use bson::Bson::Document;
+use futures::stream::TryStreamExt;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use validator::Validate;
@@ -21,7 +21,11 @@ where
 {
     async fn create(mut model: Self) -> Result<Self, Error> {
         let connection = database::connection().await;
-        model.validate().map_err(|_error| Error::bad_request())?;
+        // model.validate().map_err(|_error| Error::bad_request())?;
+        model.validate().map_err(|error| {
+            eprintln!("Validation error: {:?}", error);
+            Error::bad_request()
+        })?;
         model.save(connection, None).await.map_err(Error::Wither)?;
         Ok(model)
     }
@@ -49,7 +53,7 @@ where
         let connection = database::connection().await;
         <Self as WitherModel>::find(connection, query, options)
             .await
-            .map_err(Error::Wither)
+            .map_err(Error::Wither)?
             .try_collect::<Vec<Self>>()
             .await
             .map_err(Error::Wither)
@@ -129,8 +133,8 @@ where
     async fn delete_many(query: Document) -> Result<DeleteResult, Error> {
         let connection = database::connection().await;
         <Self as WitherModel>::delete_many(connection, query, None)
-        .await
-        .map_err(Error::Wither)
+            .await
+            .map_err(Error::Wither)
     }
 
     async fn delete_one(query: Document) -> Result<DeleteResult, Error> {
@@ -144,7 +148,7 @@ where
     async fn count(query: Document) -> Result<u64, Error> {
         let connection = database::connection().await;
         Self::collection(connection)
-            .count_documents(query,None)
+            .count_documents(query, None)
             .await
             .map_err(Error::Mongo)
     }
@@ -159,18 +163,21 @@ where
         Ok(count > 0)
     }
 
-    async fn aggregate<A>(pieline: Vec<Document>) -> Result<A, Error>
-    where A: Serialize + DeserializeOwned {
+    async fn aggregate<A>(pipeline: Vec<Document>) -> Result<Vec<A>, Error>
+    where
+        A: Serialize + DeserializeOwned,
+    {
         let connection = database::connection().await;
         let documents = Self::collection(connection)
-            .aggregate(pieline,None)
+            .aggregate(pipeline, None)
             .await
-            .map_err(Error::Mongo)
+            .map_err(Error::Mongo)?
             .try_collect::<Vec<Document>>()
             .await
             .map_err(Error::Mongo)?;
 
-        let documents = documents.into_iter()
+        let documents = documents
+            .into_iter()
             .map(|document| from_bson::<A>(Bson::Document(document)))
             .collect::<Result<Vec<A>, bson::de::Error>>()
             .map_err(Error::SerializeMongoResponse)?;
@@ -178,5 +185,8 @@ where
         Ok(documents)
     }
 
-
+    async fn sync_indexes() -> Result<(), Error> {
+        let connection = database::connection().await;
+        Self::sync(connection).await.map_err(Error::Wither)
+    }
 }

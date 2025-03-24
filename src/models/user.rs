@@ -5,6 +5,7 @@ use crate::utils::models::ModelExt;
 use bcrypt::{hash_with_salt, DEFAULT_COST};
 use serde::{Deserialize, Serialize};
 use tokio::task;
+
 use validator::Validate;
 use wither::bson::oid::ObjectId;
 use wither::Model as WitherModel;
@@ -14,6 +15,7 @@ pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub name: String,
+    #[validate(email(message = "邮箱格式不正确"))]
     pub email: String,
     pub password: String,
     pub updated_at: Date,

@@ -26,14 +26,32 @@ struct CreateBody {
     password: String,
 }
 
-async fn create_user(Json(body): Json<CreateBody>) -> Result<CustomResponse<PublicUser>, Error> {
+async fn create_user(Json(body): Json<CreateBody>) -> Result<CustomResponse<AuthenticateResponse>, Error> {
+    debug!("{:?}", body);
     let password_hash = user::hash_password(body.password).await?;
+    // 移除预查询逻辑，直接依赖数据库唯一约束
+
     let user = User::new(body.name, body.email, password_hash);
-    let user = User::create(user).await?;
+    let user = match User::create(user).await {
+        Ok(user) => user,
+        Err(e) => {
+            if e.to_string().contains("E11000") {
+                return Err(Error::Conflict("Email already exists".to_string()));
+            }
+            return Err(e);
+        }
+    };
+    let access_token = token::create(user.clone(), SETTINGS.auth.secret.as_str())
+        .map_err(|_| Error::Authenticate(AuthenticateError::TokenCreation))?;
+
     let public_user = PublicUser::from(user);
+    let response = AuthenticateResponse {
+        user: public_user,
+        access_token,
+    };
 
     let res = CustomResponseBuilder::new()
-        .body(public_user)
+        .body(response)
         .status_code(StatusCode::CREATED)
         .build();
     Ok(res)
@@ -95,11 +113,13 @@ async fn authenticate_user(
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub  struct DeleteBody {
+pub struct DeleteBody {
     pub access_token: String,
 }
 
-pub async fn soft_delete_by_token(Json(body): Json<DeleteBody>) -> Result<CustomResponse<PublicUser>, Error> {
+pub async fn soft_delete_by_token(
+    Json(body): Json<DeleteBody>,
+) -> Result<CustomResponse<PublicUser>, Error> {
     let access_token = &body.access_token;
     let secret = SETTINGS.auth.secret.as_str();
     let token_data = token::decode(access_token, secret)

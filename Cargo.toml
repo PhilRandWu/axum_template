@@ -38,3 +38,5 @@ tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "fmt", "registry"] }
 utoipa = { version = "4.2.0", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "6.0.0", features = ["axum"] }
+reqwest = { version = "0.12.15", features = ["json"] }
+futures = "0.3.31"

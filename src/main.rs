@@ -15,7 +15,7 @@ mod logger;
 mod models;
 mod routes;
 mod utils;
-
+mod tests;
 // #[cfg(test)]
 // mod tests;
 
